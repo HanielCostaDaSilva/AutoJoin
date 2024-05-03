@@ -1,3 +1,4 @@
+import os
 import pandas as pd
 from openpyxl import load_workbook
 from openpyxl.styles import PatternFill
@@ -5,23 +6,28 @@ from unidecode import unidecode
 
 import formatTable as ft
 
-func_path ="./data/func.xlsx"
-func_atualizado_path ="./data/func_atualizado.xlsx"
+# Obter o diretório atual do arquivo de script
+diretorio_atual = os.path.dirname(os.path.realpath(__file__))
+print(diretorio_atual)
 
-func_mesclado_path ="./data/func_mescla.xlsx"
+func_path = os.path.join(diretorio_atual,"data","func.xlsx")
+
+func_atualizado_path = os.path.join(diretorio_atual,"data","func_atualizado.xlsx")
+
+func_mesclado_path = os.path.join(diretorio_atual,"data","func_final.xlsx")
 
 func_df = pd.read_excel(func_path,dtype=str).fillna("")
 
-# Remover acentos de todas as colunas do DataFrame
+func_atualizado_df = pd.read_excel(func_atualizado_path,dtype=str).fillna("")
+
+""" # Remover acentos de todas as colunas do DataFrame
 for coluna in func_df.columns:
     func_df[coluna] = func_df[coluna].apply(lambda x: unidecode(str(x)) if pd.notnull(x) else x)
-
-func_atualizado_df = pd.read_excel(func_atualizado_path,dtype=str).fillna("")
 
 # Remover acentos de todas as colunas do DataFrame
 for coluna in func_atualizado_df.columns:
     func_atualizado_df[coluna] = func_atualizado_df[coluna].apply(lambda x: unidecode(str(x)) if pd.notnull(x) else x)
-
+ """
 
 #Percorremos o dataframe dos funcionarios atualizados
 for index, func_atualizado in func_atualizado_df.iterrows():
@@ -42,8 +48,11 @@ for index, func_atualizado in func_atualizado_df.iterrows():
                 
     #Caso não encontre o funcionario no dataframe, adicione-o no dataframe original
     else:
-        print(f"ESTE FUNCIONARIO ESTAVA PRESENTE NOS ATUALIZADOS MAIS NÃO NA ORIGINAL: \n{func_atualizado}")
-        func_df= func_df.add(func_atualizado)
+        print(f"ESTE FUNCIONARIO ESTAVA PRESENTE NOS ATUALIZADOS, PORÉM NÃO NA ORIGINAL: \n{func_atualizado}")        
+        #func_df= func_df.append(func_atualizado, ignore_index=True)
+        # Atribuir "ADICIONADO" à coluna "SITUACAO" para as linhas adicionadas
+        #func_df.loc[funcionario_index, "SITUACAO"] = "ADICIONADO"  
+
         
 # Salvar o DataFrame mesclado
 func_df.to_excel(func_mesclado_path, index=False)
@@ -65,16 +74,21 @@ yellow = PatternFill(start_color="FFFF00", end_color="FFFF00", fill_type="solid"
 #Vermelha se estiver faltando alguma informação OBRIGATORIA na coluna
 red = PatternFill(start_color="DE4740", end_color="DE4740", fill_type="solid")
 
+#Vermelha se estiver faltando alguma informação OBRIGATORIA na coluna
+green = PatternFill(start_color="40DE47", end_color="40DE47", fill_type="solid")
+
 # Iterar sobre as células alteradas e aplicar o estilo de preenchimento amarelo nelas
 for row in ws.iter_rows(min_row=2, max_row=len(func_df) + 1, min_col=1, max_col=len(func_df.columns)):
     #Checa se a linha foi alterada
-    if row[func_df.columns.get_loc("SITUACAO") ].value == "ALTERADO":
-        
+    if row[func_df.columns.get_loc("SITUACAO")].value == "ALTERADO":
         #Checa se as colunas obrigatorias estão preenchidas
         if ft.check_obligate_collum(row,colum_no_obligate):
             ft.paintRow(row,yellow)
         else:
             ft.paintRow(row,red)
+            
+    elif row[func_df.columns.get_loc("SITUACAO")].value == "ADICIONADO":
+            ft.paintRow(row,green)
             
 # Salvar as alterações no arquivo Excel mesclado
 workbook.save(func_mesclado_path) 
