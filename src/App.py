@@ -2,7 +2,6 @@ import os
 import pandas as pd
 from openpyxl import load_workbook
 from openpyxl.styles import PatternFill
-from unidecode import unidecode
 
 import formatTable as ft
 
@@ -10,13 +9,13 @@ import formatTable as ft
 diretorio_atual = os.path.dirname(os.path.realpath(__file__))
 print(diretorio_atual)
 
-func_path = os.path.join(diretorio_atual,"data","func.xlsx")
+func_path = os.path.join(diretorio_atual,"..","data","func.xlsx")
 
-func_atualizado_path = os.path.join(diretorio_atual,"data","func_atualizado.xlsx")
+func_atualizado_path:str = os.path.join(diretorio_atual,"..","data","func_atualizado.xlsx")
 
-func_mesclado_path = os.path.join(diretorio_atual,"data","func_final.xlsx")
+func_mesclado_path = os.path.join(diretorio_atual,"..","data","func_final.xlsx")
 
-func_df = pd.read_excel(func_path,dtype=str).fillna("")
+func_df:pd.DataFrame = pd.read_excel(func_path,dtype=str).fillna("")
 
 func_atualizado_df = pd.read_excel(func_atualizado_path,dtype=str).fillna("")
 
@@ -44,12 +43,12 @@ for index, func_atualizado in func_atualizado_df.iterrows():
         for coluna in func_df.columns:
             # Se o valor da coluna no DataFrame original estiver em branco, preencher com o valor correspondente do DataFrame atualizado
             if func_df.at[funcionario_index, coluna] == "":
-                func_df.at[funcionario_index, coluna] = unidecode(func_atualizado[coluna]).upper()
+                func_df.at[funcionario_index, coluna] = func_atualizado[coluna].upper()
                 
     #Caso não encontre o funcionario no dataframe, adicione-o no dataframe original
     else:
         print(f"ESTE FUNCIONARIO ESTAVA PRESENTE NOS ATUALIZADOS, PORÉM NÃO NA ORIGINAL: \n{func_atualizado}")        
-        #func_df= func_df.append(func_atualizado, ignore_index=True)
+        #func_df= func_df.concat(func_atualizado, ignore_index=True)
         # Atribuir "ADICIONADO" à coluna "SITUACAO" para as linhas adicionadas
         #func_df.loc[funcionario_index, "SITUACAO"] = "ADICIONADO"  
 
@@ -74,8 +73,8 @@ yellow = PatternFill(start_color="FFFF00", end_color="FFFF00", fill_type="solid"
 #Vermelha se estiver faltando alguma informação OBRIGATORIA na coluna
 red = PatternFill(start_color="DE4740", end_color="DE4740", fill_type="solid")
 
-#Vermelha se estiver faltando alguma informação OBRIGATORIA na coluna
-green = PatternFill(start_color="40DE47", end_color="40DE47", fill_type="solid")
+#VERDE se for um funcionario for adicionado a planilha original
+#green = PatternFill(start_color="40DE47", end_color="40DE47", fill_type="solid")
 
 # Iterar sobre as células alteradas e aplicar o estilo de preenchimento amarelo nelas
 for row in ws.iter_rows(min_row=2, max_row=len(func_df) + 1, min_col=1, max_col=len(func_df.columns)):
@@ -87,8 +86,15 @@ for row in ws.iter_rows(min_row=2, max_row=len(func_df) + 1, min_col=1, max_col=
         else:
             ft.paintRow(row,red)
             
+    """    
     elif row[func_df.columns.get_loc("SITUACAO")].value == "ADICIONADO":
             ft.paintRow(row,green)
-            
+    """       
+        
 # Salvar as alterações no arquivo Excel mesclado
 workbook.save(func_mesclado_path) 
+
+
+print("*-"*30)
+input("Programa finalizado (pressione Enter)....")
+print("*-"*30)
