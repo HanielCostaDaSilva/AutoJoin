@@ -6,18 +6,24 @@ from openpyxl.styles import PatternFill
 import formatTable as ft
 
 #= = = Variáveis 
+
 # Obter o diretório atual do arquivo de script
 diretorio_atual = os.path.dirname(os.path.realpath(__file__))
+#print(diretorio_atual)
 
 func_path = os.path.join(diretorio_atual,"..","data","func.xlsx")
 
-func_atualizado_path:str = os.path.join(diretorio_atual,"..","data","func_atualizado.xlsx")
+func_atualizado_path = os.path.join(diretorio_atual,"..","data","func_atualizado.xlsx")
 
 func_mesclado_path = os.path.join(diretorio_atual,"..","data","func_final.xlsx")
 
 func_df = pd.read_excel(func_path,dtype=str).fillna("")
-
 func_atualizado_df = pd.read_excel(func_atualizado_path,dtype=str).fillna("")
+
+# Removemos as colunas com o valor apenas "0", pois para nós isso significa coluna vazia.
+func_df = func_df.replace("0", "")
+func_atualizado_df = func_atualizado_df.replace("0", "")
+
 
 func_novos = [] #lista dos funcionarios que foram adicionados na tabela func_atualizado mas não na original
 
