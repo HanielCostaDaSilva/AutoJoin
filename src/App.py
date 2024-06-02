@@ -1,29 +1,24 @@
 import os
-import pandas as pd
 from openpyxl import load_workbook
 from openpyxl.styles import PatternFill
+
+import model
 
 import formatTable as ft
 
 #= = = Variáveis 
-
 # Obter o diretório atual do arquivo de script
 diretorio_atual = os.path.dirname(os.path.realpath(__file__))
-#print(diretorio_atual)
 
 func_path = os.path.join(diretorio_atual,"..","data","func.xlsx")
 
-func_atualizado_path = os.path.join(diretorio_atual,"..","data","func_atualizado.xlsx")
+func_atualizado_path:str = os.path.join(diretorio_atual,"..","data","func_atualizado.xlsx")
 
 func_mesclado_path = os.path.join(diretorio_atual,"..","data","func_final.xlsx")
 
-func_df = pd.read_excel(func_path,dtype=str).fillna("")
-func_atualizado_df = pd.read_excel(func_atualizado_path,dtype=str).fillna("")
+func_df = model.Dataframe(func_path)
 
-# Removemos as colunas com o valor apenas "0", pois para nós isso significa coluna vazia.
-func_df = func_df.replace("0", "")
-func_atualizado_df = func_atualizado_df.replace("0", "")
-
+func_atualizado_df = model.Dataframe(func_atualizado_path)
 
 func_novos = [] #lista dos funcionarios que foram adicionados na tabela func_atualizado mas não na original
 
@@ -35,13 +30,14 @@ for coluna in func_df.columns:
 # Remover acentos de todas as colunas do DataFrame
 for coluna in func_atualizado_df.columns:
     func_atualizado_df[coluna] = func_atualizado_df[coluna].apply(lambda x: unidecode(str(x)) if pd.notnull(x) else x)
- """
+"""
 
 #Percorremos o dataframe dos funcionarios atualizados
-for index, func_atualizado in func_atualizado_df.iterrows():
+for index, func_atualizado in func_atualizado_df.get_iterrows():
         
     # Encontrar o funcionário correspondente no DataFrame original
-    funcionario_index = func_df.index[func_df['MATRICULA'] == func_atualizado['MATRICULA']]
+    
+    func_index = func_df.get_rows_by_collumn('MATRICULA', func_atualizado['MATRICULA']) 
     
     # Se o funcionário estiver presente no DataFrame original, atualizar os valores em branco
     if len(funcionario_index) > 0:
