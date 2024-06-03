@@ -37,9 +37,17 @@ class Dataframe:
         return True
     
     
+    def get_index_by_colum(self, column:str, value_search: str) -> list[int] :
+        '''
+        retorna uma `list` contendo os índices a partir de uma `coluna` e `chave`
+        '''
+        list_index = self.__df.index[self.__df[column] == value_search].tolist()
+        
+        return list_index
+        
     def get_rows_by_collumn(self, column:str, value:str):
         '''
-        procura no dataframe, todas as que possuem um determinado valor 
+        procura no dataframe, todas as linhas que possuem um determinado valor 
         se não for possível, lascou pq eu não fiz tratamento :P
         '''
     
@@ -67,7 +75,6 @@ class Dataframe:
         else:
             return None
      
-            
     def alter_row(self, index:int, column:str, value:str):
         '''
             altera o valor de uma linha, através do seu índice. 
@@ -83,7 +90,7 @@ class Dataframe:
         Preenche todos os valores em brancos de uma coluna, 
         return `Bool` caso exista ou não essa coluna
         '''
-        if col_name  in self.__df.columns:
+        if col_name in self.__df.columns:
             self.__df[col_name] = self.__df[col_name].replace("", value).fillna(value)
             return True
         
@@ -111,7 +118,7 @@ class Dataframe:
         
         return False
     
-    def get_column(self,index:int,col_name:str):
+    def get_column(self,index:int,col_name:str)->str:
         ''' 
         pega o determinado valor de uma coluna do dataframe
         caso ela exista, retorna o valor,
@@ -171,6 +178,13 @@ class Dataframe:
     @property
     def columns(self):
         return self.__df.columns.copy()
+    
+    def __str__(self):
+        return str(self.__df)
+    
+    def __len__(self):
+        return self.__df.__len__()
+    
     
 if __name__ =="__main__":
     
