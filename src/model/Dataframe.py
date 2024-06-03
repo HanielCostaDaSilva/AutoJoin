@@ -26,11 +26,14 @@ class Dataframe:
         # Criamos a planilha na pasta data
         self.df.to_excel(self.__path, index=False)
     
-    def save(self) -> bool:
+    def save(self,path:str="") -> bool:
         '''
         return True if the setores was been saved, Exception if not
         '''
-        self.__df.to_excel(self.__path, index=False)
+        if path == "":
+            self.__df.to_excel(self.__path, index=False)
+        else:
+            self.__df.to_excel(path, index=False)
         return True
     
     
@@ -86,7 +89,6 @@ class Dataframe:
         
         return False
     
-    
     def add_column(self,col_name:str,default_value="")-> bool:
         '''
         adicona uma nova coluna no dataframe, se ela não existir no dataframe. 
@@ -108,6 +110,17 @@ class Dataframe:
             return True
         
         return False
+    
+    def get_column(self,index:int,col_name:str):
+        ''' 
+        pega o determinado valor de uma coluna do dataframe
+        caso ela exista, retorna o valor,
+        se não `None`
+        '''
+        if self.__check__column(col_name):
+            return self.__df.at[index, col_name]
+        
+        return None
     
     def change_value(self, column:str,old_value:str,new_value):
         '''
@@ -157,7 +170,7 @@ class Dataframe:
     
     @property
     def columns(self):
-        return self.__df.columns
+        return self.__df.columns.copy()
     
 if __name__ =="__main__":
     
