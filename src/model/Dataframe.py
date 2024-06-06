@@ -78,12 +78,15 @@ class Dataframe:
     def alter_row(self, index:int, column:str, value:str):
         '''
             altera o valor de uma linha, através do seu índice. 
-            caso a `column` não exista no df, criará a linha
+            caso a `column` não exista no df, criará a linha/
+            retorna a linha alterada
+       
         '''
         if column not in self.df.columns:
             self.add_column(column) 
         
         self.__df.loc[index, column] = value 
+        return self.__df.loc[index]
       
     def fill_collumn(self, col_name:str,value=""):
         '''
