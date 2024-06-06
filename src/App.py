@@ -7,27 +7,53 @@ import model
 import formatTable as ft
 
 #= = = Variáveis 
+
 # Obter o diretório atual do arquivo de script
 diretorio_atual = os.path.dirname(os.path.realpath(__file__))
-
 func_path = os.path.join(diretorio_atual,"..","data","func.xlsx")
-
 func_atualizado_path = os.path.join(diretorio_atual,"..","data","func_atualizado.xlsx")
-
 func_mesclado_path = os.path.join(diretorio_atual,"..","data","func_final.xlsx")
 
 func_df = model.Dataframe(func_path)
-
-func_df.add_column("SITUACAO")
-
 func_atualizado_df = model.Dataframe(func_atualizado_path)
-func_atualizado_df.add_column("SITUACAO")
+
+#Coletando a coluna PK do DF
+
+columns_df = func_df.columns
+
+colum_pk_index =-1
+
+#pedimos a coluna que será a chave primária do DF
+while colum_pk_index <= 0 or colum_pk_index > len(columns_df):
+    print("digite o índice de uma coluna para ser a chave primária ")
+    
+    for i, column in enumerate(columns_df):
+        print(f"{i + 1} = {column}" )  
+    
+    try:  
+        colum_pk_index= int(input("=>"))
+    except Exception as E:
+        print(E)
+
+#com o índice, coletamos a coluna primária
+pk_column = columns_df[colum_pk_index - 1]
+
+print(f" coluna {pk_column} escolhida")
+input()
+
+#Adicionando a coluna que será responsável para saber se vai alterar dataframe
+situacao_col= "SITUACAO_DATAFRAME"
+func_df.add_column(situacao_col)
+func_atualizado_df.add_column(situacao_col)
+
+#Posiveis situações
+situacao_lista =["PENDENTE","ALTERADO","ADICIONADO"]
 
 #Percorremos o dataframe dos funcionarios atualizados
 for _, func_atualizado in func_atualizado_df.get_iterrows():
         
     # Encontra o funcionário correspondente no DataFrame original
-    func_index_list = func_df.get_index_by_colum('MATRICULA', func_atualizado['MATRICULA']) 
+    func_index_list = func_df.get_index_by_colum(pk_column, func_atualizado[pk_column]) 
     
     # Se o funcionário estiver presente no DataFrame original, UMA OU + VEZEZ atualizar todos os valores em branco
     if len(func_index_list) > 0:
@@ -44,11 +70,11 @@ for _, func_atualizado in func_atualizado_df.get_iterrows():
                     alterado=True
             
             if alterado:  
-                    func_df.alter_row(index, "SITUACAO", "ALTERADO")
+                    func_df.alter_row(index, situacao_col, situacao_lista[1])
                 
     #Caso não encontre o funcionario no dataframe, adicione-o no dataframe original
     else:
-        func_atualizado.loc["SITUACAO"] = "ADICIONADO"
+        func_atualizado.loc[situacao_col] = situacao_lista[2]
         func_df.add_row(**func_atualizado)
     
     print(func_atualizado)
@@ -72,18 +98,18 @@ quant_func = len(func_df)
 #quantidade máxima de colunas
 quant_col = len(func_df.columns)
 
-#colunas não obrigatorias
+""" #colunas não obrigatorias
 colum_no_obligate = [
 func_df.columns.get_loc("NUMERO"),
 func_df.columns.get_loc("COMPLEMENTO"),
 func_df.columns.get_loc("FONE")
-]
+] """
 
 #Amarelo se as tabelas estão preenchidas corretamente
 yellow = PatternFill(start_color="FFFF00", end_color="FFFF00", fill_type="solid")
 
 #Vermelha se estiver faltando alguma informação OBRIGATORIA na coluna
-red = PatternFill(start_color="DE4740", end_color="DE4740", fill_type="solid")
+#red = PatternFill(start_color="DE4740", end_color="DE4740", fill_type="solid")
 
 #VERDE se for um funcionario for adicionado a planilha original
 green = PatternFill(start_color="40DE47", end_color="40DE47", fill_type="solid")
@@ -92,16 +118,12 @@ green = PatternFill(start_color="40DE47", end_color="40DE47", fill_type="solid")
 for row in ws.iter_rows(min_row=2, max_row= quant_func + 1, min_col=1, max_col=quant_col):
     #Checa se a linha foi alterada
     
-    if row[func_df.columns.get_loc("SITUACAO")].value == "ALTERADO":
-        #Checa se as colunas obrigatorias estão preenchidas
+    if row[func_df.columns.get_loc(situacao_col)].value == situacao_lista[1]:
+        #pinta as linhas alteradas de amarelo
+        ft.paintRow(row,yellow)   
         
-        if ft.check_obligate_collum(row,colum_no_obligate):
-            ft.paintRow(row,yellow)
-        else:
-            ft.paintRow(row,red)   
-        
-    elif row[func_df.columns.get_loc("SITUACAO")].value == "ADICIONADO":
-            ft.paintRow(row,green)
+    elif row[func_df.columns.get_loc(situacao_col)].value == situacao_lista[2]:
+        ft.paintRow(row,green)
         
 # Salvar as alterações no arquivo Excel mesclado
 workbook.save(func_mesclado_path) 
