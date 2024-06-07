@@ -44,6 +44,18 @@ class Dataframe:
         list_index = self.__df.index[self.__df[column] == value_search].tolist()
         
         return list_index
+    
+    def get_columns(self,column:str)  -> enumerate:
+        '''
+        retorna uma enumerate contendo todos os valores de uma determinada coluna
+        caso a coluna não exita, retorna um enumerate vazio
+        '''
+        columns=[]
+        if self.__check_column(column):
+            columns= self.__df[column]
+        
+        return enumerate(columns)
+        
         
     def get_rows_by_collumn(self, column:str, value:str):
         '''
@@ -75,19 +87,19 @@ class Dataframe:
         else:
             return None
      
-    def alter_row(self, index:int, column:str, value:str):
+    def alter_column_index(self, index:int, column:str, value:str):
         '''
-            altera o valor de uma linha, através do seu índice. 
-            caso a `column` não exista no df, criará a linha/
-            retorna a linha alterada
-       
+            altera o valor de uma coluna, através do seu índice. 
+            retorna True se foi possível alterar o valor da coluna
+            caso a `column` não exista no df, retorna False.
+               
         '''
-        if column not in self.df.columns:
-            self.add_column(column) 
+        if not self.__check_column(column):
+            return False
         
-        self.__df.loc[index, column] = value 
-        return self.__df.loc[index]
-      
+        self.__df.loc[index, column] = value
+        return True    
+         
     def fill_collumn(self, col_name:str,value=""):
         '''
         Preenche todos os valores em brancos de uma coluna, 
@@ -115,7 +127,7 @@ class Dataframe:
         remove uma determinada coluna do dataframe
         caso ela exista, retorna True
         '''
-        if self.__check__column(col_name):
+        if self.__check_column(col_name):
             self.__df = self.__df.drop(columns=[col_name])
             return True
         
@@ -127,7 +139,7 @@ class Dataframe:
         caso ela exista, retorna o valor,
         se não `None`
         '''
-        if self.__check__column(col_name):
+        if self.__check_column(col_name):
             return self.__df.at[index, col_name]
         
         return None
@@ -151,7 +163,7 @@ class Dataframe:
         return index > 0 and index < len(self.__df)  
     
     
-    def __check__column(self,col_name:str)-> bool:
+    def __check_column(self,col_name:str)-> bool:
         ''' 
         valida se a coluna existe dentro do dataframe
         '''
@@ -188,6 +200,9 @@ class Dataframe:
     def __len__(self):
         return self.__df.__len__()
     
+    def __getitem__(self,index:int):
+        return self.__df.loc[index]
+    
     
 if __name__ =="__main__":
     
@@ -210,3 +225,10 @@ if __name__ =="__main__":
     
     print(df)
     print("=========ADICIONANDO NOVA LINHA===========")
+    print("=========PEGANDO OS VALORES DE UMA ÚNICA COLUNA===========")
+    
+    
+    print("=========PEGANDO OS VALORES DE UMA ÚNICA COLUNA===========")
+    for index, func_it in df.get_columns("NOME"):
+        print(f"{index} - {func_it}")
+    print("=========PEGANDO OS VALORES DE UMA ÚNICA COLUNA===========")
